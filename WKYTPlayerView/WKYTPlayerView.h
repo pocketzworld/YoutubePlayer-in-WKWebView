@@ -130,6 +130,8 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
  */
 - (nullable UIView *)playerViewPreferredInitialLoadingView:(nonnull WKYTPlayerView *)playerView;
 
+- (void)playerView:(nonnull WKYTPlayerView *)playerView didSelectVideoURL:(NSURL*)url;
+
 @end
 
 /**

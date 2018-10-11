@@ -56,6 +56,7 @@ NSString static *const kWKYTPlayerCallbackOnPlayTime = @"onPlayTime";
 NSString static *const kWKYTPlayerCallbackOnYouTubeIframeAPIReady = @"onYouTubeIframeAPIReady";
 NSString static *const kWKYTPlayerCallbackOnYouTubeIframeAPIFailedToLoad = @"onYouTubeIframeAPIFailedToLoad";
 
+NSString static *const kWKYTPlayerVideoUrlRegexPattern = @"^http(s)://(www.)youtube.com/watch(.*)$";
 NSString static *const kWKYTPlayerEmbedUrlRegexPattern = @"^http(s)://(www.)youtube.com/embed/(.*)$";
 NSString static *const kWKYTPlayerAdUrlRegexPattern = @"^http(s)://pubads.g.doubleclick.net/pagead/conversion/";
 NSString static *const kWKYTPlayerOAuthRegexPattern = @"^http(s)://accounts.google.com/o/oauth2/(.*)$";
@@ -290,7 +291,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
                 if (jsonDeserializationError) {
                     completionHandler(nil, jsonDeserializationError);
                 }
-
+                
                 completionHandler(playbackRates, nil);
             }
         }
@@ -435,7 +436,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
                 if (jsonDeserializationError) {
                     completionHandler(nil, jsonDeserializationError);
                 }
-
+                
                 completionHandler(videoIds, nil);
             }
         }
@@ -519,7 +520,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
                     WKYTPlaybackQuality quality = [WKYTPlayerView playbackQualityForString:rawQualityValue];
                     [levels addObject:[NSNumber numberWithInt:quality]];
                 }
-
+                
                 completionHandler(levels, nil);
             }
         }
@@ -795,7 +796,22 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
                                  options:0
                                    range:NSMakeRange(0, [url.absoluteString length])];
     
-    if (ytMatch || adMatch || oauthMatch || staticProxyMatch || syndicationMatch) {
+    NSRegularExpression *ytVideoRegex =
+    [NSRegularExpression regularExpressionWithPattern:kWKYTPlayerVideoUrlRegexPattern
+                                              options:NSRegularExpressionCaseInsensitive
+                                                error:&error];
+    NSTextCheckingResult *ytVideoMatch =
+    [ytVideoRegex firstMatchInString:url.absoluteString
+                             options:0
+                               range:NSMakeRange(0, [url.absoluteString length])];
+    
+    
+    if (ytVideoMatch) {
+        if ([self.delegate respondsToSelector:@selector(playerView:didSelectVideoURL:)]) {
+            [self.delegate playerView:self didSelectVideoURL:url];
+        }
+        return YES;
+    } else if (ytMatch || adMatch || oauthMatch || staticProxyMatch || syndicationMatch) {
         return YES;
     } else {
         [[UIApplication sharedApplication] openURL:url];
@@ -853,33 +869,33 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     
     self.webView.translatesAutoresizingMaskIntoConstraints = NO;
     NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:self.webView
-                                                                 attribute:NSLayoutAttributeTop
-                                                                 relatedBy:NSLayoutRelationEqual
-                                                                    toItem:self
-                                                                 attribute:NSLayoutAttributeTop
-                                                                multiplier:1.0
-                                                                  constant:0.0];
+                                                                     attribute:NSLayoutAttributeTop
+                                                                     relatedBy:NSLayoutRelationEqual
+                                                                        toItem:self
+                                                                     attribute:NSLayoutAttributeTop
+                                                                    multiplier:1.0
+                                                                      constant:0.0];
     NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:self.webView
-                                                                 attribute:NSLayoutAttributeLeft
-                                                                 relatedBy:NSLayoutRelationEqual
-                                                                    toItem:self
-                                                                 attribute:NSLayoutAttributeLeft
-                                                                multiplier:1.0
-                                                                  constant:0.0];
+                                                                      attribute:NSLayoutAttributeLeft
+                                                                      relatedBy:NSLayoutRelationEqual
+                                                                         toItem:self
+                                                                      attribute:NSLayoutAttributeLeft
+                                                                     multiplier:1.0
+                                                                       constant:0.0];
     NSLayoutConstraint *rightConstraint = [NSLayoutConstraint constraintWithItem:self.webView
-                                                                 attribute:NSLayoutAttributeRight
-                                                                 relatedBy:NSLayoutRelationEqual
-                                                                    toItem:self
-                                                                 attribute:NSLayoutAttributeRight
-                                                                multiplier:1.0
-                                                                  constant:0.0];
+                                                                       attribute:NSLayoutAttributeRight
+                                                                       relatedBy:NSLayoutRelationEqual
+                                                                          toItem:self
+                                                                       attribute:NSLayoutAttributeRight
+                                                                      multiplier:1.0
+                                                                        constant:0.0];
     NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:self.webView
-                                                                 attribute:NSLayoutAttributeBottom
-                                                                 relatedBy:NSLayoutRelationEqual
-                                                                    toItem:self
-                                                                 attribute:NSLayoutAttributeBottom
-                                                                multiplier:1.0
-                                                                  constant:0.0];
+                                                                        attribute:NSLayoutAttributeBottom
+                                                                        relatedBy:NSLayoutRelationEqual
+                                                                           toItem:self
+                                                                        attribute:NSLayoutAttributeBottom
+                                                                       multiplier:1.0
+                                                                         constant:0.0];
     NSArray *constraints = @[topConstraint, leftConstraint, rightConstraint, bottomConstraint];
     [self addConstraints:constraints];
     
