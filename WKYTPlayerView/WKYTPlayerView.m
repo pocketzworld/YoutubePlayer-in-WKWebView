@@ -810,7 +810,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
         if ([self.delegate respondsToSelector:@selector(playerView:didSelectVideoURL:)]) {
             [self.delegate playerView:self didSelectVideoURL:url];
         }
-        return YES;
+        return NO;
     } else if (ytMatch || adMatch || oauthMatch || staticProxyMatch || syndicationMatch) {
         return YES;
     } else {
